@@ -12,14 +12,14 @@
 import nltk
 from nltk.corpus import stopwords
 from collections import defaultdict
-from datetime import datetime
 import json
 import os
-import shutil
+import re
+import string
 
-RAW_JSON_DATA_DIR = 'data/TestTripAdvisorData/JSON'
-CLEANED_JSON_DATA_DIR = 'data/TestTripAdvisorData/CleanData_JSON'
-RATING_ASPECTS = ["Service", "Cleanliness", "Overall", "Value", "Location", "Rooms"]
+RAW_JSON_DATA_DIR = 'data/TripAdvisorData/raw_JSON'
+CLEANED_JSON_DATA_DIR = 'data/TripAdvisorData/CleanData_JSON'
+RATING_ASPECTS = ["Service", "Cleanliness", "Overall", "Value", "Location", "Rooms", "Sleep Quality"]
 
 def prepareStopWords():
     stopwordsList = stopwords.words('english')
@@ -54,7 +54,7 @@ def preprocess_text(rawText):
     # Remove extra chars and remove stop words.
     text_content = [''.join(re.split("[ .,;:!?‘’``''@#$%^_&*()<>{}~\n\t\\\-]", word)) for word in text]
 
-    text_content = [word for word in text_content if word not in stopWords]
+    text_content = [word for word in text_content if (word not in stopWords and word not in string.punctuation)]
 
     # After the punctuation above is removed it still leaves empty entries in the list.
     # Remove any entries where the len is zero.
@@ -63,7 +63,7 @@ def preprocess_text(rawText):
     WNL = nltk.WordNetLemmatizer()
     text_content = [WNL.lemmatize(t) for t in text_content]
 
-    return text_content
+    return " ".join(text_content)
 
 raw_datafiles = os.listdir(RAW_JSON_DATA_DIR)
 
@@ -88,7 +88,6 @@ for hotel_dict in hotel_dict_list:
         except:
             continue
         review['Content'] = preprocess_text(review['Content'])
-        review['Date'] = datetime.strptime(review['Date'], '%B %d, %Y')
         selected_reviews.append(review)
 
         for word in set(review['Content']):
@@ -103,8 +102,8 @@ for hotel_dict in hotel_dict_list:
     selected_reviews =  []
     for review in hotel_dict['Reviews']:
         content = ' '.join(list(filter(lambda x: x in word_to_keep, review['Content'])))
-        if len(content.trim()) > 0:
-            selected_reviews.append(content)
+        if len(content.strip()) > 0:
+            selected_reviews.append(review)
 
     hotel_dict['Reviews'] = selected_reviews
 
@@ -112,10 +111,7 @@ for hotel_dict in hotel_dict_list:
     if len(hotel_dict['Reviews']) == 0:
         hotel_dict_list.remove(hotel_dict)
 
-if os.path.isdir(CLEANED_JSON_DATA_DIR):
-    shutil.rmtree(CLEANED_JSON_DATA_DIR)
-os.mkdir(CLEANED_JSON_DATA_DIR)
 for hotel_dict in hotel_dict_list:
     hotel_id = hotel_dict['HotelInfo']['HotelID']
-    with open(CLEANED_JSON_DATA_DIR + '/' +  hotel_id + '.json']), 'w+') as clean_data_file:
-        json.dump(hotel_dict, clean_data_file, default=str)
+    with open(CLEANED_JSON_DATA_DIR + '/' +  hotel_id + '.json', 'w+') as clean_data_file:
+        json.dump(hotel_dict, clean_data_file, default=str, indent=2)

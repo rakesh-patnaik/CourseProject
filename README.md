@@ -23,31 +23,28 @@ latent aspect rating analysis ( lara ) refers to the task of inferring both opin
 
 If a system is fed the aspects to look for in a review it would need human intervention and hence defeating the purpose of large scale data mining on review texts. A generative model that identifies the topics and weights associated with each of the topics would make the system function without supervision and hence scale up. Hence this topic of LARA without aspect keyword supervision is valuable and interesting.
 
+# Demo:
+    ./demo_presentation.pdf
 
 ## Implementation technology
 Python3
 
 ##Dataset
-
+subset of TripAdvisor data from
 http://times.cs.uiuc.edu/~wang296/Data/
 
 # Run the project
 ```shell script
 # Running the project
-```shell script
  git clone https://github.com/rakesh-patnaik/CourseProject.git
  cd CourseProject
- python -m venv env
+ python3 -m venv env
  source env/bin/activate
  pip install --upgrade pip
- pip install wordcloud
- pip install pandas
- pip install nltk
- python -m pip install lxml bs4 requests
- python  -m pip install python-slugify
+ python -m pip install -r requirements.txt
  python -m nltk.downloader stopwords
  python -m nltk.downloader punkt
  python -m nltk.downloader wordnet
  python preprocessing_Sec5_1.py
-```
+ python Main.py
 ```
